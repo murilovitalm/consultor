@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Manuais{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>📚 Acervo de Manuais</h3>
+
+    <!-- Campo de pesquisa -->
+    <form onsubmit="buscar(); return false;">
+    <div class="mb-3 mt-3 d-flex">
+        <input type="text" id="campo-busca" class="form-control me-2" placeholder="🔍 Pesquisar documento...">
+        <button class="btn btn-primary" type="button" onclick="buscar()">Pesquisar</button>
+    </div>
+    </form>
+    <!-- Spinner de carregamento -->
+    <div id="spinner" class="text-center my-3" style="display:none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- Lista de resultados -->
+    <ul class="list-group mt-3" id="lista-arquivos"></ul>
+    <p class="mt-3" id="mensagem-nenhum" style="display:none;">Nenhum manual encontrado.</p>
+</div>
+
+<!-- Modal de Preview -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" style="max-width:90%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewModalLabel">Preview do Documento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="iframePreview" src="" width="100%" height="600px"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirPreview(url) {
+    document.getElementById('iframePreview').src = url;
+    const myModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    myModal.show();
+}
+
+// Atualiza a lista de arquivos na tela e destaca o termo pesquisado
+function atualizarLista(dados, termoBusca = "") {
+    const lista = document.getElementById("lista-arquivos");
+    const mensagem = document.getElementById("mensagem-nenhum");
+    lista.innerHTML = "";
+
+    if (!dados.length) {
+        mensagem.style.display = "block";
+        return;
+    }
+
+    mensagem.style.display = "none";
+
+    dados.forEach(arquivo => {
+        const linkPreview = "{{ url_for('static', filename='manuais/') }}" + arquivo.arquivo;
+        const linkDownload = "{{ url_for('manuais.download_manual', filename='') }}" + arquivo.arquivo;
+
+        // Destaca o termo pesquisado dentro do nome do arquivo
+        let nomeArquivo = arquivo.arquivo;
+        if (termoBusca) {
+            const regex = new RegExp(`(${termoBusca})`, "gi");
+            nomeArquivo = nomeArquivo.replace(regex, "<mark>$1</mark>");
+        }
+
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center arquivo-item";
+        li.innerHTML = `
+            ${nomeArquivo} 
+            <div>
+                <button class="btn btn-sm btn-info me-2" onclick="abrirPreview('${linkPreview}')">🔍 Preview</button>
+                <a href="${linkDownload}" class="btn btn-sm btn-primary">⬇️ Download</a>
+            </div>
+        `;
+        lista.appendChild(li);
+    });
+}
+
+// Busca via API
+async function buscar() {
+    const termo = document.getElementById("campo-busca").value.trim();
+    const spinner = document.getElementById("spinner");
+    spinner.style.display = "block"; // mostra spinner
+
+    try {
+        const resp = await fetch("{{ url_for('manuais.manuais_api') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ termo })
+        });
+
+        const dados = await resp.json();
+        atualizarLista(dados, termo);
+    } catch (error) {
+        console.error("Erro ao buscar manuais:", error);
+    } finally {
+        spinner.style.display = "none"; // esconde spinner
+    }
+}
+
+// Carrega todos os arquivos ao abrir a página
+document.addEventListener("DOMContentLoaded", () => {
+    buscar(); // busca vazia retorna todos os arquivos
+});
+</script>
+{% endblock %}

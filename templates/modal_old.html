@@ -1,0 +1,53 @@
+
+<div class="modal fade" id="atividadeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar atividade – <span id="dataSelecionadaLabel"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="atividades.modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="atividadeForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Id Empresa</label>
+              <input type="text" class="form-control" name="company_id" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Id Projeto</label>
+              <input type="text" class="form-control" name="project_id" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Data</label>
+              <input type="date" class="form-control" name="activity_date" id="activity_date" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Hora início</label>
+              <input type="time" class="form-control" name="start_time" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Hora fim</label>
+              <input type="time" class="form-control" name="end_time" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Qtd horas intervalo</label>
+              <input type="number" min="0" step="0.25" class="form-control" name="break_hours" value="0">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Descrição da atividade</label>
+              <textarea class="form-control" name="description" required></textarea>
+            </div>
+          </div>
+        </form>
+        <div class="mt-3">
+          <h6 class="mb-2">Atividades do dia</h6>
+          <ul class="list-group" id="listaAtividadesDia"></ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="atividades.modal">Fechar</button>
+        <button type="button" class="btn btn-success" id="salvarAtividade">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>

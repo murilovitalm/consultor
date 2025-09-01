@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Prévia dos Arquivos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>📄 Prévia dos Arquivos Gerados</h3>
+
+    <a href="{{ url_for('geralayout.download_all') }}" class="btn btn-primary mt-3">⬇️ Baixar Todos em ZIP</a>
+    <a href="{{ url_for('geralayout.index') }}" class="btn btn-secondary mt-3 ms-2">🔙 Voltar</a>
+
+    {% for arquivo in arquivos %}
+      <h5 class="mt-4">{{ arquivo.filename }}</h5>
+      <textarea id="txt-{{ loop.geralayout }}" class="form-control mb-2" rows="10" readonly>{{ arquivo.conteudo }}</textarea>
+      <button class="btn btn-success mb-3" onclick="copiarArquivo('txt-{{ loop.geralayout }}')">📋 Copiar Arquivo</button>
+      <a href="{{ url_for('geralayout.download_file', filename=arquivo.filename) }}" class="btn btn-info mb-3 ms-2">⬇️ Baixar Arquivo</a>
+    {% endfor %}
+</div>
+
+<script>
+function copiarArquivo(id) {
+    const textarea = document.getElementById(id);
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // Para dispositivos móveis
+    document.execCommand('copy');
+    alert('Conteúdo copiado para a área de transferência!');
+}
+</script>
+{% endblock %}

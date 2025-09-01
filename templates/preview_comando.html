@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Preview Comando{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>📄 Prévia do Comando Gerado</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Comando SQL:</label>
+        <textarea id="comando-text" class="form-control" rows="5" readonly>{{ comando }}</textarea>
+    </div>
+
+    <button class="btn btn-success" onclick="copiarComando()">📋 Copiar Comando</button>
+    <a href="{{ url_for('comandos.competencias') }}" class="btn btn-secondary ms-2">🔙 Voltar</a>
+</div>
+
+<script>
+function copiarComando() {
+    const textarea = document.getElementById('comando-text');
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // Para dispositivos móveis
+    document.execCommand('copy');
+    alert('Comando copiado para a área de transferência!');
+}
+</script>
+{% endblock %}

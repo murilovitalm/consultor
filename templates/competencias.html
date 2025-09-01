@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Competências{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>📝 Competências</h2>
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label">Avaliado:</label>
+      <input type="text" name="avaliado" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Avaliador:</label>
+      <input type="text" name="avaliador" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Forma da Avaliação:</label>
+      <input type="text" name="forma" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Gerar Comando</button>
+  </form>
+</div>
+{% endblock %}

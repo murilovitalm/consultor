@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Gerador de Layout Transação Apdata{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h2 class="mb-4">📄 Gerador de Arquivo Layout Transação Apdata .TXT</h2>
+
+    <form method="POST" enctype="multipart/form-data" id="upload-form">
+      <div class="mb-3 drop-zone" id="drop-zone">
+        Arraste o arquivo .xlsx aqui ou clique para selecionar
+        <input type="file" name="file" id="file" accept=".xlsx" hidden required>
+        <div class="file-label" id="file-label"></div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        Próximo
+        <span class="spinner-border spinner-border-sm ms-2" id="loading-spinner-upload"></span>
+      </button>
+    </form>
+
+    {% if abas %}
+    <form method="POST" id="transacoes-form" class="transacoes-section" style="display:block;">
+      {% for aba in abas %}
+        <div class="mb-3">
+          <label class="form-label">Id da Transação para "{{ aba }}":</label>
+          <input type="text" name="transacao_{{ aba }}" class="form-control" required placeholder="Ex: 15326">
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-success">
+        Gerar Layout
+        <span class="spinner-border spinner-border-sm ms-2" id="loading-spinner-trans"></span>
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <style>
+    .drop-zone {
+      border: 2px dashed #0d6efd;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      color: #6c757d;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .drop-zone.dragover {
+      background-color: #e9ecef;
+    }
+    .spinner-border { display: none; }
+    .file-label { margin-top: 10px; font-weight: bold; }
+    .transacoes-section { margin-top: 30px; display: none; }
+  </style>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file');
+    const fileLabel = document.getElementById('file-label');
+    const spinnerUpload = document.getElementById('loading-spinner-upload');
+    const spinnerTrans = document.getElementById('loading-spinner-trans');
+
+    if(dropZone) {
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length) { fileInput.files = files; fileLabel.textContent = files[0].name; }
+      });
+      fileInput.addEventListener('change', () => { if(fileInput.files.length>0) fileLabel.textContent=fileInput.files[0].name; });
+    }
+
+    const uploadForm = document.getElementById('upload-form');
+    if(uploadForm) uploadForm.addEventListener('submit', () => spinnerUpload.style.display='inline-block');
+    const transForm = document.getElementById('transacoes-form');
+    if(transForm) transForm.addEventListener('submit', () => spinnerTrans.style.display='inline-block');
+  </script>
+{% endblock %}

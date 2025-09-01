@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Guia do Consultor{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>📘 Guia do Consultor</h2>
+  <p>Escolha a funcionalidade desejada:</p>
+
+  <!-- Botão Calendário de Atividades -->
+  <a href="{{ url_for('atividades') }}" class="btn btn-success btn-lg mb-3 ms-3"> 📅 Calendário de Atividades</a>
+
+  <!-- Botão Gerar Layout Apdata -->
+  <a href="{{ url_for('geralayout.index') }}" class="btn btn-success btn-lg mb-3">📄 Gerar Layout Apdata</a>
+
+  <!-- Botão Comandos -->
+  <a href="{{ url_for('comandos.comandos') }}" class="btn btn-success btn-lg mb-3 ms-3">📝 Comandos</a>
+
+  <!-- Botão Manuais -->
+  <a href="{{ url_for('documentos.documentos') }}" class="btn btn-success btn-lg mb-3 ms-3">📁 Documentação</a>
+
+  <!-- Botão Manuais -->
+  <a href="{{ url_for('manuais.manuais') }}" class="btn btn-success btn-lg mb-3 ms-3">📁 Manuais</a>
+
+  <!-- Botão Vídeo -->
+  <a href="{{ url_for('videos.video_aula') }}" class="btn btn-success btn-lg mb-3 ms-3"> 🎥 Vídeos</a>
+
+</div>
+{% endblock %}

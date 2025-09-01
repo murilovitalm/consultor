@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}Atividades{% endblock %}
+
+{% block content %}
+<div class="container mt-2 mb-2">
+    <h3 style="font-size:1.25rem;"><i class="bi bi-calendar3"></i> Calendário de Atividades</h3>
+
+    <!-- Indicadores no topo -->
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <div class="alert alert-info py-1 px-2 mb-0">
+          📌 Atividades no mês: <span id="totalAtividadesMes">0</span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="alert alert-success py-1 px-2 mb-0">
+          ⏱ Total de horas lançadas: <span id="totalHorasMes">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spinner carregamento calendário -->
+    <div id="spinner-calendar" class="text-center my-2" style="display:none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- Calendário -->
+    <div id="calendar" class="mb-3"></div>
+
+    <!-- Lista de atividades do dia -->
+    <div id="lista-atividades-dia-container" style="display:none;">
+        <h6>Atividades do dia <span id="dataSelecionadaLabel"></span></h6>
+        <ul class="list-group mt-1" id="listaAtividadesDia"></ul>
+    </div>
+</div>
+
+<!-- Modal de cadastro/edição de atividades -->
+<div class="modal fade" id="atividadeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-height: 80vh;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-calendar3"></i> Registrar atividade – <span id="dataSelecionadaLabelModal"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="atividadeForm">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Id Empresa</label>
+              <input type="text" class="form-control form-control-sm" name="company_id" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Id Projeto</label>
+              <input type="text" class="form-control form-control-sm" name="project_id" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Data</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                <input type="date" class="form-control form-control-sm" name="activity_date" id="activity_date" required>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Hora início</label>
+              <input type="time" class="form-control form-control-sm" name="start_time" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Hora fim</label>
+              <input type="time" class="form-control form-control-sm" name="end_time" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Qtd horas intervalo</label>
+              <input type="time" class="form-control form-control-sm" name="break_hours" value="00:00" step="60">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Descrição da atividade</label>
+              <div id="descriptionEditor" style="height: 200px; background-color: white;"></div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Lista dentro do modal -->
+        <div class="mt-3">
+          <h6>Atividades cadastradas:</h6>
+          <ul class="list-group mt-1" id="listaAtividadesModal"></ul>
+        </div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-success btn-sm" id="salvarAtividade">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Quill.js -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+<script>
+  const quill = new Quill('#descriptionEditor', {
+    theme: 'snow',
+    modules: { toolbar: [['bold','italic','underline'], [{'list':'ordered'},{'list':'bullet'}], ['image']] }
+  });
+</script>
+
+<script>
+let calendar;
+let atividadeModal;
+let dataSelecionada = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+  const spinner = document.getElementById('spinner-calendar');
+  const listaContainer = document.getElementById('lista-atividades-dia-container');
+  const listaModal = document.getElementById('listaAtividadesModal');
+  atividadeModal = new bootstrap.Modal(document.getElementById('atividadeModal'));
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'pt-br',
+    selectable: true,
+    height: 600,
+    dayMaxEventRows: 3,
+    /*headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek,dayGridDay,dayGridYear' },*/
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridYear' },
+    views: { dayGridYear: { type: 'dayGridYear', buttonText: 'Ano' } },
+    /*buttonText: { today: 'Hoje', month: 'Mês', week: 'Semana', day: 'Dia', list: 'Lista', year: 'Ano' },*/
+    buttonText: { today: 'Hoje', month: 'Mês', list: 'Lista', year: 'Ano' },
+    noEventsText: 'Nenhum evento para exibir',
+    dateClick: function(info) { abrirModalParaData(info.dateStr); },
+    events: function(fetchInfo, successCallback, failureCallback) {
+      spinner.style.display = "block";
+      fetch(`/api/summary?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`)
+        .then(r => r.json())
+        .then(data => {
+          successCallback(data.events);
+
+          // Destaque visual nos dias com atividades
+          setTimeout(() => {
+            document.querySelectorAll('.fc-daygrid-day').forEach(cell => {
+              const dateStr = cell.getAttribute('data-date');
+              const dayData = data.daysWithActivity.find(d => d.date === dateStr);
+              if (dayData) {
+                cell.classList.add('fc-day-with-activity');
+                cell.setAttribute('title', `${dayData.total_activities} atividades, ${dayData.total_hours}h`);
+              } else {
+                cell.classList.remove('fc-day-with-activity');
+                cell.removeAttribute('title');
+              }
+            });
+
+            // Atualiza indicadores do mês
+            const totalAtividadesMes = data.daysWithActivity.reduce((sum, d) => sum + d.total_activities, 0);
+            const totalHorasMes = data.daysWithActivity.reduce((sum, d) => sum + d.total_hours, 0);
+            document.getElementById('totalAtividadesMes').innerText = totalAtividadesMes;
+            document.getElementById('totalHorasMes').innerText = totalHorasMes.toFixed(2) + "h";
+          }, 0);
+        })
+        .catch(err => failureCallback(err))
+        .finally(() => spinner.style.display = "none");
+    }
+  });
+
+  calendar.render();
+
+  function abrirModalParaData(dateStr) {
+    dataSelecionada = dateStr;
+    document.getElementById('dataSelecionadaLabelModal').innerText = dateStr;
+    document.getElementById('atividadeForm').reset();
+    quill.setContents([]);
+    document.getElementById('activity_date').value = dateStr;
+    carregarAtividadesDoDia(dateStr);
+    atividadeModal.show();
+  }
+
+  function carregarAtividadesDoDia(dateStr) {
+    fetch(`/api/activities?date=${dateStr}`)
+      .then(r => r.json())
+      .then(lista => {
+        listaContainer.style.display = "block";
+        document.getElementById('dataSelecionadaLabel').innerText = dateStr;
+
+        const ul = document.getElementById('listaAtividadesDia');
+        ul.innerHTML = '';
+        if (!lista.length) ul.innerHTML = '<li class="list-group-item text-muted">Nenhuma atividade</li>';
+        else {
+          lista.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `<div><strong>${item.start_time} - ${item.end_time}</strong> (${item.company_id}/${item.project_id})<br>${item.description}</div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="excluirAtividade(${item.id})">🗑️</button>`;
+            ul.appendChild(li);
+          });
+        }
+
+        listaModal.innerHTML = '';
+        lista.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center';
+          li.innerHTML = `<div><strong>${item.start_time} - ${item.end_time}</strong> (${item.company_id}/${item.project_id})<br>${item.description}</div>
+                          <button class="btn btn-sm btn-outline-danger" onclick="excluirAtividade(${item.id})">🗑️</button>`;
+          listaModal.appendChild(li);
+        });
+      });
+  }
+
+  document.getElementById('salvarAtividade').addEventListener('click', function() {
+    const form = document.getElementById('atividadeForm');
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.description = quill.root.innerHTML;
+
+    fetch('/api/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(resp => resp.json())
+    .then(() => {
+      atividadeModal.hide();
+      calendar.refetchEvents();
+      setTimeout(() => carregarAtividadesDoDia(data.activity_date), 150);
+    });
+  });
+
+  window.excluirAtividade = function(id) {
+    if (!confirm("Deseja excluir esta atividade?")) return;
+    fetch(`/api/activities/${id}`, { method: 'DELETE' })
+      .then(() => {
+        calendar.refetchEvents();
+        setTimeout(() => carregarAtividadesDoDia(dataSelecionada), 150);
+      });
+  }
+});
+</script>
+
+<style>
+  #listaAtividadesDia li, #listaAtividadesModal li {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+} 
+
+/* Dias com atividades no calendário */
+.fc-day-with-activity {
+  background: linear-gradient(135deg, #d4edda 0%, #a8e5a1 100%) !important;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Pequeno destaque ao passar o mouse */
+.fc-day-with-activity:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* Círculo com quantidade de atividades no canto superior esquerdo do dia */
+.fc-day-with-activity {
+  position: relative; /* necessário para o ::after ser posicionado em relação ao dia */
+}
+
+.fc-day-with-activity::after {
+  content: attr(title);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* centraliza mantendo o formato original */
+  background-color: #28a745;
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  border-radius: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+
+/* Ajuste de fonte e padding do tooltip (se precisar do tooltip nativo)*/ 
+.fc-daygrid-day.fc-day-with-activity[title] {
+  font-weight: 600;
+}
+
+</style>
+{% endblock %}

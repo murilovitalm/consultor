@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Comandos{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>📋 Comandos</h2>
+  <p>Escolha o comando desejado:</p>
+  <a href="{{ url_for('comandos.competencias') }}" class="btn btn-primary">Competências</a>
+  <!-- Futuramente outros botões poderão ser adicionados aqui -->
+</div>
+{% endblock %}

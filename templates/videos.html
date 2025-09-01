@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Vídeos {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>🎥 Vídeos </h3>
+
+    <!-- Formulário de pesquisa -->
+    <form method="POST" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="termo" placeholder="Pesquisar vídeo..." value="{{ termo }}">
+            <button class="btn btn-primary" type="submit">🔍 Pesquisar</button>
+        </div>
+    </form>
+
+    <!-- Lista de vídeos -->
+    <div class="row">
+        {% for video in videos %}
+        <div class="col-md-6 mb-4">
+            <h6>{{ video }}</h6>
+            <video width="100%" controls>
+                <source src="{{ url_for('static', filename='videos/' ~ video) }}">
+                Seu navegador não suporta vídeo.
+            </video>
+        </div>
+        {% endfor %}
+
+        {% if not videos %}
+        <p>Nenhum vídeo encontrado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
