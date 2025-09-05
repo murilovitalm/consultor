@@ -13,3 +13,5 @@ Busca Avançada de Documentos, permitindo localizar de forma rápida manuais, gu
 Acervo de Vídeos com soluções de erros comuns e aulas práticas de implantação, servindo como apoio visual e prático para o dia a dia.
 
 Nosso objetivo é reunir em um só lugar tudo o que o consultor precisa para otimizar seu tempo, melhorar a gestão de informações e garantir mais eficiência em cada etapa do processo de consultoria.
+
+https://github.com/murilovitalm/consultor/issues/2#issue-3385936318
